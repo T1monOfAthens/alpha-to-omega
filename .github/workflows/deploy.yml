@@ -1,0 +1,36 @@
+name: Deploy Alpha to Omega
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout generated website
+        uses: actions/checkout@v6
+      - name: Upload generated website
+        uses: actions/upload-pages-artifact@v4
+        with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
